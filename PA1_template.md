@@ -1,46 +1,51 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r, echo=TRUE, results='hide'}
+
+```r
 # Load libraries
 library(data.table)
 library(ggplot2)
+```
 
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
 # Load data
 data = data.table(read.csv("./data/activity.csv"))
 data$date = as.Date(data$date) # Convert date factor to date
-
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r, echo=TRUE, results='hide'}
+
+```r
 stepsPerDay = data[, lapply(.SD, sum, na.rm = TRUE), by = date]
 stepsPerDay = stepsPerDay[,day:=as.factor(1:61)]
 
 meanSteps = floor(mean(stepsPerDay$steps, na.rm= TRUE))
 medianSteps = floor(median(stepsPerDay$steps, na.rm = TRUE))
 ```
-The mean number of steps taken each day was: `r meanSteps`.  
-The mediam number of steps taken each day was: `r medianSteps`.
-```{r, echo=TRUE}
+The mean number of steps taken each day was: 9354.  
+The mediam number of steps taken each day was: 1.0395\times 10^{4}.
+
+```r
 ggplot(stepsPerDay,aes(x=day, y=steps)) + 
   geom_bar(stat = "identity",width=1,colour="black", fill="grey") + 
   scale_x_discrete( breaks=c(1,seq(5,55,by=5), 61)) + 
   theme_bw() +
   xlab("Day") +
   ylab("Steps")
-
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 ## What is the average daily activity pattern?
-```{r, echo=TRUE}
+
+```r
 stepsPerPeriod = data[, lapply(.SD, mean, na.rm = TRUE), by = interval]
 
 tmpTime = stepsPerPeriod$interval
@@ -50,9 +55,10 @@ tmpTime = format(strptime(tmpTime, format = "%H%M"), format = "%H:%M")
 
 maxInterval = tmpTime[stepsPerPeriod$steps == max(stepsPerPeriod$steps)]
 ```
-The 5-minute overwhich the most steps are taken, on average, is at `r maxInterval` in the morning.
+The 5-minute overwhich the most steps are taken, on average, is at 08:35 in the morning.
 
-```{r}
+
+```r
 sizeX = length(stepsPerPeriod$interval)
 
 ggplot(stepsPerPeriod, aes(x=seq(1, sizeX,1), y=steps)) + 
@@ -61,14 +67,14 @@ ggplot(stepsPerPeriod, aes(x=seq(1, sizeX,1), y=steps)) +
   theme_bw() + 
   xlab("Time") +
   ylab("Steps")
-
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 ## Imputing missing values
 Missing step values were assigned the average of the step values for that interval.
-```{r, echo=TRUE}
 
+```r
 data2 = data
 numNA = sum(as.numeric(is.na(data$steps)))
 
@@ -90,12 +96,14 @@ ggplot(stepsPerDay2,aes(x=day, y=steps)) +
   theme_bw() +
   xlab("Day") +
   ylab("Steps")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r, echo=TRUE}
+
+```r
 tmpDays = weekdays(data$date)
 weekFactor = factor(as.numeric(tmpDays == "Saturday" | tmpDays == "Sunday") + 1,
                     labels = c("Weekday", "Weekend"))
@@ -118,5 +126,6 @@ ggplot(stepsPerWeekday, aes(x=c(seq(1, sizeX,1), seq(1, sizeX,1)), y=steps)) +
   theme_bw() + 
   xlab("Time") +
   ylab("Steps")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
